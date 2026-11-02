@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>little moments – Virtual Photobooth</title>
+<link href="https://fonts.googleapis.com/css2?family=Yeseva+One&family=DM+Sans:wght@400;600&family=Pacifico&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light;--bg:#fff5fa;--panel:#fff;--ink:#4a2352;--mute:#9b7aa6;--gold:#ec5f9b;--red:#9b5de5;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;background:linear-gradient(180deg,#fde6f1,#ecdcfa) fixed;color:var(--ink);font:16px/1.5 "DM Sans",system-ui,sans-serif}
+header,main{position:relative;z-index:1;max-width:1040px;margin:0 auto}
+main{padding:0 16px}
+header{display:flex;justify-content:space-between;align-items:center;margin:12px auto 0;width:calc(100% - 32px);padding:10px 24px;background:#fff;border-radius:99px;box-shadow:0 8px 22px #c0508066,0 2px 6px #c0508040}
+.logo{display:flex;align-items:center;gap:10px;font:24px "Yeseva One",serif;color:var(--gold);text-decoration:none;cursor:pointer}
+nav a{color:var(--ink);margin-left:18px;cursor:pointer;text-decoration:none;opacity:.85}
+nav a:hover{color:var(--gold)}
+.page{display:none;padding:18px 0 50px}.page.active{display:block;animation:in .5s}
+@keyframes in{from{opacity:0;transform:translateY(10px)}}
+h1,h2{font-family:"Yeseva One",serif;font-weight:400;margin:.2em 0}
+h1{font-size:clamp(34px,7vw,60px);line-height:1.05}
+.hero{text-align:center;padding-top:16px}
+.hero .big{display:none}
+.sub{color:#7a4a88;max-width:440px;margin:10px auto 16px;font-size:15px}
+.hbox{display:grid;grid-template-columns:1fr minmax(0,1.6fr) 1fr;align-items:center;gap:6px;padding:46px 18px;border-radius:44px;background:radial-gradient(ellipse at 50% 50%,#f08bb8 0,#f9c9e0 38%,#f1e3ff 68%,#fff7fb 100%);box-shadow:0 14px 40px #c0508066,0 3px 8px #c0508040}
+.mid{display:flex;flex-direction:column;align-items:center}
+.badge{background:#ffffffb0;border:1px solid #fff;box-shadow:0 6px 16px #c0508040;border-radius:18px;padding:9px 16px;font-size:13px;color:#8a5a96;max-width:400px;margin-bottom:16px}
+.row{display:flex;align-items:center;justify-content:center;gap:14px}
+.row span{font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:#7a3a78}
+.hero h1{margin:0;background:linear-gradient(90deg,#d6347a,#8e4fe0);-webkit-background-clip:text;background-clip:text;color:transparent;font-size:clamp(40px,6.5vw,70px);filter:drop-shadow(0 4px 6px #8e4fe066) drop-shadow(0 10px 18px #d6347a44)}
+.tag{margin:4px 0 0;font-size:18px;color:#6b2a6b}
+.start{font-size:20px;padding:15px 46px}
+.strips{position:relative;width:170px;height:290px;justify-self:center}
+.strip{position:absolute;width:92px;padding:7px;border-radius:4px;box-shadow:0 12px 24px #a0306070,0 3px 6px #a0306050;display:flex;flex-direction:column;gap:5px}
+.strip i{display:block;height:54px;border-radius:3px;font:normal 28px/54px serif;text-align:center;box-shadow:0 2px 4px #a0306035;background:linear-gradient(135deg,#ffd9ea,#d9c7ff)}
+.strip i:nth-child(even){background:linear-gradient(135deg,#f9c1dc,#f3e0ff)}
+.s1{background:#ffc2db;left:0;top:34px;transform:rotate(-9deg)}
+.s2{background:#fff;left:62px;top:0;transform:rotate(6deg)}
+.s3{background:#e3d2ff;left:62px;top:34px;transform:rotate(8deg)}
+.s4{background:#fff;left:0;top:0;transform:rotate(-6deg)}
+@media(max-width:760px){.hbox{grid-template-columns:1fr;gap:10px;padding:30px 12px}.strips{transform:scale(.8);height:250px}.row span{display:none}}
+.btn{background:linear-gradient(180deg,#ff8ab8,#ec5f9b);color:#fff;border:0;border-radius:99px;padding:13px 28px;font:600 17px "DM Sans";cursor:pointer;box-shadow:0 4px 0 #c23d74,0 0 24px #ec5f9b55;transition:.15s}
+.btn:hover{transform:translateY(-2px)}.btn:active{transform:translateY(2px);box-shadow:0 1px 0 #c23d74}
+.btn.ghost{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 2px #ec5f9b88}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:14px;text-align:left}
+.steps .card b{font:18px "Yeseva One",serif}
+.steps .card p{margin:6px 0 0;font-size:14px;color:#7a4a88}
+.card{background:var(--panel);border:1px solid #f6cfe2;border-radius:14px;padding:14px 16px}
+.card b{color:var(--gold)}
+.booth{position:relative;margin:10px auto;max-width:640px;border:12px dotted var(--gold);border-radius:22px;box-shadow:0 0 30px #ffb62766,inset 0 0 30px #000;background:#000;aspect-ratio:4/3;overflow:hidden}
+.booth video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:block}
+.ov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;background:#000c;color:#fff;gap:10px}
+.ov[hidden]{display:none}
+#cd{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:200px "Yeseva One";color:#fff;text-shadow:0 0 40px #000;pointer-events:none}
+#cd.pop{animation:pop 1s}
+@keyframes pop{0%{transform:scale(2);opacity:0}25%{transform:scale(1);opacity:1}100%{transform:scale(.8);opacity:.2}}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+#flash.go{animation:fl .6s}
+@keyframes fl{0%{opacity:1}100%{opacity:0}}
+.ctr{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:14px 0}
+.thumbs{display:flex;gap:10px;justify-content:center}
+.thumbs button{width:90px;aspect-ratio:4/3;border-radius:8px;border:2px dashed #ec5f9b88;background:#ffffff99;padding:0;overflow:hidden;color:var(--mute);cursor:pointer}
+.thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+.edit{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:20px;align-items:start}
+@media(max-width:760px){.edit{grid-template-columns:1fr}}
+.stage{background:#ffffffb0;border-radius:14px;padding:14px;text-align:center}
+.stage canvas{max-width:100%;max-height:72vh;box-shadow:0 8px 24px #000a;touch-action:none;cursor:grab}
+.ctl h3{margin:14px 0 6px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+.opts{display:flex;flex-wrap:wrap;gap:7px}
+.opts button{background:var(--panel);color:var(--ink);border:1px solid #f3c1d8;border-radius:99px;padding:6px 13px;font:inherit;font-size:14px;cursor:pointer}
+.opts button.on{background:var(--gold);color:#fff;border-color:var(--gold)}
+.opts .sw{width:30px;height:30px;padding:0;border-radius:50%}
+.opts .em{font-size:22px;padding:2px 8px;border-radius:10px}
+#finalCv.rip{animation:rip 1.1s ease-in forwards}
+@keyframes rip{0%,40%{clip-path:polygon(0 0,8% 0,16% 0,24% 0,32% 0,40% 0,48% 0,56% 0,64% 0,72% 0,80% 0,88% 0,96% 0,100% 0,100% 100%,0 100%)}
+ 12%{transform:translateY(10px) rotate(-1deg)}24%{transform:translateY(0) rotate(1deg)}36%{transform:translateY(14px) rotate(-1.5deg)}
+ 50%,100%{clip-path:polygon(0 1.5%,8% 0,16% 1.5%,24% 0,32% 1.5%,40% 0,48% 1.5%,56% 0,64% 1.5%,72% 0,80% 1.5%,88% 0,96% 1.5%,100% 0,100% 100%,0 100%)}
+ 50%{transform:translateY(6px) rotate(1deg)}100%{transform:translateY(130%) rotate(-5deg);opacity:0}}
+#shm{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;background:#4a235266;padding:16px}
+#shm[hidden]{display:none}
+.shbox{position:relative;background:#fff;border-radius:22px;padding:22px 20px 18px;width:min(380px,100%);box-shadow:0 20px 50px #0005;text-align:center;animation:in .3s}
+.shbox h3{font:22px "Yeseva One",serif;margin:0 0 14px;color:var(--ink)}
+.x{position:absolute;right:12px;top:10px;border:0;background:#fde6f1;border-radius:50%;width:30px;height:30px;cursor:pointer;color:var(--ink);transition:.15s}
+.x:hover{transform:scale(1.1)}
+.plats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 8px}
+.plat{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:var(--ink);text-decoration:none;transition:.15s}
+.plat:hover{transform:translateY(-3px)}
+.plat i{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font:700 20px "DM Sans";font-style:normal;box-shadow:0 4px 10px #0003}
+.cprow{display:flex;gap:8px;margin-top:6px}
+.cprow input{flex:1;min-width:0;font-size:13px}
+.cprow .btn{padding:8px 18px;font-size:14px}
+#env{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:#4a235266}
+#env[hidden]{display:none}
+.ev{position:relative;width:min(300px,78vw);height:200px;margin-top:110px}
+.ev>*{position:absolute}
+.eback{inset:0;background:var(--d);border-radius:8px;box-shadow:0 14px 30px #0006}
+#eimg{left:50%;top:6px;height:170px;width:auto;transform:translate(-50%,-340px);box-shadow:0 4px 10px #0005;z-index:2}
+.efront{inset:0;background:var(--c);clip-path:polygon(0 0,50% 52%,100% 0,100% 100%,0 100%);border-radius:8px;z-index:3}
+.eflap{left:0;top:0;width:100%;height:62%;background:var(--f);clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:top;transform:rotateX(180deg);z-index:4}
+.eseal{left:50%;top:46%;font-size:34px;transform:translate(-50%,-50%) scale(0);z-index:5}
+#env.go #eimg{animation:sin 1.1s .3s ease-in-out forwards}
+#env.go .eflap{animation:fl2 .7s 1.6s ease-in-out forwards}
+#env.go .eseal{animation:seal .5s 2.25s cubic-bezier(.3,1.6,.5,1) forwards}
+#env.go .ev{animation:away .9s 3.8s ease-in forwards}
+@keyframes sin{to{transform:translate(-50%,0)}}
+@keyframes fl2{to{transform:rotateX(0)}}
+@keyframes seal{to{transform:translate(-50%,-50%) scale(1)}}
+@keyframes away{to{transform:translate(130%,-140%) rotate(18deg);opacity:0}}
+a.btn{text-decoration:none;display:inline-block}
+.hgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-top:14px}
+.hitem{background:#fff;border-radius:14px;padding:12px;text-align:center;box-shadow:0 6px 16px #c0508040}
+.hitem img{width:100%;max-height:260px;object-fit:contain;display:block}
+.hd{font-size:13px;color:var(--mute);margin-top:6px}
+.opts button,.thumbs button,nav a{transition:.15s}
+.opts button:hover,.thumbs button:hover{transform:translateY(-2px);box-shadow:0 5px 12px #ec5f9b44;border-color:var(--gold)}
+.opts button:active{transform:translateY(0)}
+.opts .em:hover{transform:translateY(-3px) scale(1.2)}
+.btn.ghost:hover{background:#ffe3f0}
+.btn:disabled:hover{transform:none}
+.back{padding:8px 20px;font-size:14px;margin-bottom:8px}
+.dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;border:1px solid #0003;vertical-align:-1px}
+.cust{font-size:14px;display:flex;align-items:center;gap:6px;color:var(--mute)}
+.lbl{font-size:12px;color:var(--mute);margin:8px 0 4px}
+input[type=text]{width:100%;background:var(--panel);color:var(--ink);border:1px solid #f3c1d8;border-radius:10px;padding:10px;font:inherit}
+input[type=color]{width:34px;height:30px;border:0;background:none;padding:0}
+.slot{max-width:420px;margin:10px auto 0;height:14px;background:#000;border-radius:8px;box-shadow:0 0 0 6px #e9b4cf,0 6px 12px #b0508060}
+.out{max-width:min(92%,700px);margin:0 auto;overflow:hidden;padding:0 10px 30px;text-align:center}
+#finalCv{max-width:100%;max-height:70vh;box-shadow:0 10px 30px #000a;transform-origin:top}
+#finalCv.print{animation:pr 2.6s cubic-bezier(.3,.7,.3,1)}
+@keyframes pr{0%{transform:translateY(-102%)}100%{transform:none}}
+.note{color:var(--mute);font-size:14px;text-align:center}
+</style>
+</head>
+<body>
+<header>
+ <a class="logo" data-go="home"><svg width="36" height="36" viewBox="0 0 40 40"><g transform="rotate(-8 20 20)"><rect x="6" y="4" width="28" height="32" rx="3" fill="#fff" stroke="#f3a8c9" stroke-width="1.5"/><rect x="9.5" y="7.5" width="21" height="19" rx="1.5" fill="#ffb3d4"/><circle cx="16.5" cy="15" r="1.3" fill="#4a2352"/><circle cx="23.5" cy="15" r="1.3" fill="#4a2352"/><path d="M17 18.5q3 3 6 0" stroke="#4a2352" stroke-width="1.2" fill="none" stroke-linecap="round"/><circle cx="13.8" cy="18" r="1.8" fill="#ff7fb0" opacity=".6"/><circle cx="26.2" cy="18" r="1.8" fill="#ff7fb0" opacity=".6"/><path d="M20 33.5l-3.2-3.1a1.9 1.9 0 0 1 3.2-2.3 1.9 1.9 0 0 1 3.2 2.3z" fill="#ec5f9b"/></g></svg>Little Moments</a>
+ <nav><a data-go="home">Home</a><a data-go="history">History</a><a data-go="about">About</a></nav>
+</header>
+<main>
+
+<section id="home" class="page active hero"><div class="hbox"><div class="strips"><div class="strip s1"><i>😊</i><i>🥰</i><i>😜</i></div><div class="strip s2"><i>🎀</i><i>😎</i><i>🌸</i><i>💖</i></div></div><div class="mid"><div class="badge">🎄🎃🎆 <b>What makes us different:</b> festive themes! Pick Christmas, Halloween or New Year with matching colors, stickers and date styles.</div>
+ <svg class="big" viewBox="0 0 40 40"><rect x="3" y="9" width="34" height="24" rx="6" fill="#ffb627"/><rect x="13" y="5" width="12" height="6" rx="2" fill="#ffb627"/><circle cx="20" cy="21" r="8" fill="#2a1700"/><circle cx="20" cy="21" r="4.5" fill="#8fd3ff"/><circle cx="31" cy="14" r="1.8" fill="#8f1d2c"/></svg>
+ <div class="row"><span>est</span><h1>little moments</h1><span>2026</span></div>
+ <p class="tag">Welcome to the studio! Strike a pose, make a memory ♡</p>
+ <p class="sub">Little Moments is a virtual photobooth that lives in your browser. Take four snaps with a countdown and flash, pick a filter and layout, decorate your strip, then download it like a real printed keepsake. Your photos never leave your device.</p>
+ <button class="btn start" data-go="camera">START 📸</button></div><div class="strips"><div class="strip s3"><i>💕</i><i>😘</i><i>🦋</i></div><div class="strip s4"><i>✨</i><i>🥳</i><i>🌷</i><i>🍓</i></div></div></div>
+ <h2 style="margin:34px 0 0;color:#8e4fe0">How it works</h2><div class="steps">
+  <div class="card"><b>1 · Snap 📷</b><p>Tap “Allow camera”, then “Take 4 photos”. Pose at every 3-2-1 countdown.</p></div>
+  <div class="card"><b>2 · Style 🎨</b><p>Choose a layout, filter and theme. Add stickers and a caption.</p></div>
+  <div class="card"><b>3 · Print 🖨️</b><p>Tap “Preview”, then download or share your strip.</p></div>
+ </div>
+</section>
+
+<section id="camera" class="page">
+ <button class="btn ghost back" data-go="home">← Back</button>
+ <h2 style="text-align:center">Strike a pose! 💅</h2>
+ <div class="booth">
+  <video id="vid" playsinline muted></video>
+  <div id="cd"></div><div id="flash"></div>
+  <div class="ov" id="perm"><div style="font-size:40px">🎥</div><b>Can Lumi Booth use your camera?</b><span id="permMsg" class="sub" style="margin:0">Your browser will ask for permission. Photos stay on your device.</span><button class="btn" id="allow">Allow camera</button><button class="btn ghost" id="demo" style="padding:8px 18px;font-size:14px">Use demo shots instead</button></div>
+ </div>
+ <div class="ctr"><button class="btn" id="snap">● Take 4 photos</button><button class="btn ghost" id="reset">Retake all</button></div>
+ <div class="thumbs" id="thumbs"></div>
+ <p class="note">Tap a thumbnail to retake just that photo.</p>
+ <div class="ctr"><button class="btn" id="toEdit" disabled>Continue to editing →</button></div>
+</section>
+
+<section id="edit" class="page">
+ <button class="btn ghost back" data-go="camera">← Back</button>
+ <h2 style="text-align:center">Style your strip</h2>
+ <div class="edit">
+  <div class="stage"><canvas id="editCv"></canvas><p class="note" style="margin:8px 0 0">Drag stickers to move them.</p></div>
+  <div class="ctl">
+   <h3>Layout</h3><div class="opts" id="oL"></div>
+   <h3>Filter</h3><div class="opts" id="oF"></div>
+   <h3>Theme &amp; background</h3><div class="opts" id="oT"></div>
+   
+   <h3>Stickers</h3><div class="lbl">Cute &amp; classics</div><div class="opts" id="oS"></div><div class="lbl">Christmas</div><div class="opts" id="oS2"></div><div class="lbl">Halloween</div><div class="opts" id="oS3"></div><div class="lbl">New Year</div><div class="opts" id="oS4"></div>
+   <h3>Caption</h3><input type="text" id="cap" maxlength="28" placeholder="Write a short message…">
+   <div class="opts" style="margin-top:8px"><button id="dt" class="on">Date &amp; time: on</button><button id="clr">Clear stickers</button></div>
+   <div class="ctr" style="justify-content:flex-start"><button class="btn" data-go="preview">Preview →</button></div>
+  </div>
+ </div>
+</section>
+
+<section id="preview" class="page">
+ <h2 style="text-align:center">Your photo strip</h2>
+ <div class="slot"></div>
+ <div class="out"><canvas id="finalCv"></canvas></div>
+ <div class="ctr"><button class="btn" id="dl">⬇ Download image</button><button class="btn" id="sh">↗ Share with friends</button></div>
+ <div class="ctr"><button class="btn ghost" data-go="edit">← Back to editing</button><button class="btn ghost" data-go="camera">Retake photos</button></div>
+ <p class="note" id="msg"></p>
+</section>
+
+<section id="history" class="page">
+ <button class="btn ghost back" data-go="home">← Back</button>
+ <h2>Your saved strips</h2>
+ <p class="note" style="text-align:left">Finished strips are saved automatically in this browser, so you can still download them if your device shuts down. Clearing your browser data will remove them.</p>
+ <p class="note" id="hempty">No saved strips yet. Take some photos and they’ll show up here!</p>
+ <div class="hgrid" id="hgrid"></div>
+ <div class="ctr"><button class="btn ghost" id="hclear">Clear all</button></div>
+</section>
+
+<section id="about" class="page">
+ <h2>About Little Moments</h2>
+ <div class="card"><b>Purpose</b><br>Little Moments brings the fun of a classic photobooth online, so anyone can make a keepsake photo strip without leaving home.</div>
+ <div class="card" style="margin-top:12px"><b>How it works</b><ol style="margin:6px 0 0;padding-left:20px"><li>Allow camera access and press “Take 4 photos”.</li><li>Choose a layout, filter, theme, stickers and caption.</li><li>Preview your printed strip, then download or share it.</li></ol></div>
+ <div class="card" style="margin-top:12px"><b>Meet the creator</b><br>Made by Nini, a student at the Polytechnic University of the Philippines, as a first website project.<br><span style="color:var(--mute)">Add your email or social links here.</span></div>
+ <div class="ctr"><button class="btn" data-go="camera">Start Photobooth</button></div>
+</section>
+</main>
+<div id="shm" hidden><div class="shbox"><button class="x" id="shx" aria-label="Close">✕</button><h3>Share your strip 💌</h3><div class="plats" id="plats"></div><h3 style="font-size:15px;margin:18px 0 6px">Or copy the link</h3><div class="cprow"><input type="text" id="shl" readonly><button class="btn" id="shc">Copy</button></div><button class="btn ghost" id="shi" style="margin-top:14px;padding:9px 20px;font-size:14px">📷 Share the picture itself</button><p class="note" style="margin:10px 0 0;font-size:12px">The link opens this website. To send the actual photo strip, use “Share the picture itself”.</p></div></div>
+<div id="env" hidden><div class="ev"><div class="eback"></div><img id="eimg" alt=""><div class="efront"></div><div class="eflap"></div><div class="eseal"></div></div></div>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],wait=ms=>new Promise(r=>setTimeout(r,ms)),p2=n=>String(n).padStart(2,'0');
+const tm=d=>d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+const S={photos:[null,null,null,null],layout:'classic',filter:'none',theme:'classic',bg:null,caption:'',showDate:true,stickers:[],date:new Date()};
+const F={none:['Original','none'],bw:['Black & White','grayscale(1) contrast(1.15)'],vintage:['Vintage','sepia(.35) contrast(.9) saturate(1.25) brightness(1.08)'],sepia:['Sepia','sepia(1) contrast(1.05)'],warm:['Warm','saturate(1.25) brightness(1.05)','rgba(255,150,40,.22)'],cool:['Cool','saturate(1.05) brightness(1.05)','rgba(60,130,255,.22)'],film:['Retro Film','contrast(1.25) saturate(.75) sepia(.2)','rgba(30,110,90,.15)',1]};
+const T={
+classic:{n:'Classic',bg:'#fffaf0',ink:'#231a17',font:'Special Elite',dec:['✦','✦'],fmt:d=>d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'}).toUpperCase()},
+retro:{n:'Retro',bg:'#f1dfb9',ink:'#5b3a1c',font:'Special Elite',dec:['🎞️','🎞️'],dc:'#e8731a',fmt:d=>d.getFullYear()+' · '+p2(d.getMonth()+1)+' · '+p2(d.getDate())},
+christmas:{n:'Christmas',bg:'#a51d2d',ink:'#fff6e5',font:'Pacifico',dec:['🎄','❄️'],pd:'❄️',fmt:d=>d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})},
+pink:{n:'Pink Pop',bg:'#ffd3e2',ink:'#a1214f',font:'Pacifico',dec:['🎀','🎀'],pd:'💗',fmt:d=>d.toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'})},
+lavender:{n:'Lavender',bg:'#e3d2ff',ink:'#5a2d91',font:'Pacifico',dec:['🦋','🦋'],pd:'✨',fmt:d=>d.toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'})},
+halloween:{n:'Halloween',bg:'#1b1026',ink:'#ff9a2e',font:'Special Elite',dec:['🎃','🦇'],pd:'🦇',fmt:d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}).toUpperCase()},
+newyear:{n:'New Year',bg:'#0d1b3e',ink:'#ffd76a',font:'Yeseva One',dec:['🎆','🥂'],pd:'✨',fmt:d=>'✦ '+d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' ✦'},
+noir:{n:'Noir',bg:'#141414',ink:'#f2f2f2',font:'DM Sans',dec:['★','★'],fmt:d=>d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())}};
+const LAY={classic:'Classic 4-strip',strip3:'3-strip',grid:'2×2 grid',polaroid:'Polaroid'};
+const lum=h=>{const n=parseInt(h.slice(1),16);return(.299*(n>>16)+.587*(n>>8&255)+.114*(n&255))/255};
+
+function go(p){$$('.page').forEach(e=>e.classList.toggle('active',e.id===p));scrollTo(0,0);
+ if(p==='camera')initCam();if(p==='history')renderHistory();
+ if(p==='edit'){S.date=new Date();draw($('#editCv'))}
+ if(p==='preview'){const c=$('#finalCv');S.date=new Date();draw(c);c.classList.remove('print');void c.offsetWidth;c.classList.add('print');printSound();saveHist();$('#msg').textContent='Auto-saved to History on this browser ✓'}}
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g){e.preventDefault();go(g.dataset.go)}});
+
+/* ---------- drawing ---------- */
+function cover(c,img,x,y,w,h){const iw=img.videoWidth||img.width,ih=img.videoHeight||img.height,r=iw/ih,t=w/h;let sw=iw,sh=ih,sx=0,sy=0;if(r>t){sw=ih*t;sx=(iw-sw)/2}else{sh=iw/t;sy=(ih-sh)/2}c.drawImage(img,sx,sy,sw,sh,x,y,w,h)}
+function photo(c,img,x,y,w,h){if(!img)return;const f=F[S.filter],t=T[S.theme];c.save();c.beginPath();c.rect(x,y,w,h);c.clip();c.filter=f[1];cover(c,img,x,y,w,h);c.filter='none';
+ if(f[2]){c.fillStyle=f[2];c.fillRect(x,y,w,h)}
+ if(f[3]){const g=c.createRadialGradient(x+w/2,y+h/2,w*.25,x+w/2,y+h/2,w*.75);g.addColorStop(0,'#0000');g.addColorStop(1,'#000a');c.fillStyle=g;c.fillRect(x,y,w,h);for(let i=0;i<350;i++){c.fillStyle=Math.random()<.5?'#ffffff1f':'#0000001f';c.fillRect(x+Math.random()*w,y+Math.random()*h,1.5,1.5)}}
+ if(t.pd){c.font='20px serif';c.textAlign='center';c.textBaseline='middle';c.fillText(t.pd,x+18,y+18);c.fillText(t.pd,x+w-18,y+h-18)}
+ c.restore()}
+function geo(){const L=S.layout,P=28,G=14,s=[];let W=360,y;
+ if(L==='classic'||L==='strip3'){const n=L==='classic'?4:3;for(let i=0;i<n;i++)s.push([P,P+i*(228+G),304,228]);y=P+n*228+(n-1)*G}
+ else if(L==='grid'){W=662;for(let i=0;i<4;i++)s.push([P+(i%2)*314,P+(i>>1)*239,300,225]);y=P+2*225+G}
+ else{s.push([26,26,308,308]);y=334}
+ const fh=L==='polaroid'?120:104;return{W,H:y+fh,s,fy:y,fh}}
+function draw(cv){const g=geo(),t=T[S.theme],k=2;cv.width=g.W*k;cv.height=g.H*k;const c=cv.getContext('2d');c.scale(k,k);
+ const bg=S.bg||t.bg,ink=S.bg?(lum(bg)>.55?'#231a17':'#fff6e5'):t.ink;
+ c.fillStyle=bg;c.fillRect(0,0,g.W,g.H);
+ g.s.forEach((r,i)=>photo(c,S.photos[i],...r));
+ c.textAlign='center';c.textBaseline='middle';c.fillStyle=ink;
+ const cx=g.W/2,cy=g.fy+g.fh*.38;
+ c.font=`26px "${t.font}"`;c.fillText(S.caption||'Little Moments',cx,cy,g.W-120);
+ c.font='22px serif';c.fillText(t.dec[0],30,cy);c.fillText(t.dec[1],g.W-30,cy);
+ if(S.showDate){c.font=`15px "${t.font}"`;c.fillStyle=S.bg?ink:(t.dc||ink);c.fillText(t.fmt(S.date),cx,g.fy+g.fh*.72,g.W-40)}
+ S.stickers.forEach(k=>{c.font=`${k.s}px serif`;c.textAlign='center';c.textBaseline='middle';c.fillText(k.e,k.x*g.W,k.y*g.H)})}
+const redraw=()=>draw($('#editCv'));
+
+/* ---------- camera ---------- */
+let stream=null,demo=false,busy=false,ac;const vid=$('#vid'),cd=$('#cd');
+function initCam(){updateThumbs();$('#perm').hidden=!!(stream||demo)}
+$('#allow').onclick=async()=>{try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1280},height:{ideal:960}},audio:false});vid.srcObject=stream;await vid.play();$('#perm').hidden=true}catch(e){$('#permMsg').textContent='Camera is unavailable or blocked. Check your browser’s site permissions, or try the demo shots.'}};
+$('#demo').onclick=()=>{demo=true;$('#perm').hidden=true};
+function shutter(){ac=ac||new(window.AudioContext||window.webkitAudioContext)();ac.resume();const t=ac.currentTime;
+ const nb=ac.createBuffer(1,ac.sampleRate*.05,ac.sampleRate),a=nb.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=(Math.random()*2-1)*Math.pow(1-i/a.length,4);
+ const s=ac.createBufferSource();s.buffer=nb;const hf=ac.createBiquadFilter();hf.type='highpass';hf.frequency.value=2500;const cg=ac.createGain();cg.gain.value=.7;s.connect(hf);hf.connect(cg);cg.connect(ac.destination);s.start(t);
+ const n=(f1,f2,s0,d,v,ty)=>{const o=ac.createOscillator(),g=ac.createGain();o.type=ty;o.frequency.setValueAtTime(f1,s0);o.frequency.exponentialRampToValueAtTime(f2,s0+d*.5);g.gain.setValueAtTime(.0001,s0);g.gain.exponentialRampToValueAtTime(v,s0+.01);g.gain.exponentialRampToValueAtTime(.0001,s0+d);o.connect(g);g.connect(ac.destination);o.start(s0);o.stop(s0+d+.05)};
+ n(500,1300,t+.03,.14,.3,'sine');n(1568,1568,t+.14,.3,.14,'triangle');n(2093,2093,t+.22,.4,.12,'triangle')}
+function printSoundOld(){try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();ac.resume();const t=ac.currentTime,D=2.5;
+ const pass=(s0,d,f1,f2,v)=>{const b=ac.createBuffer(1,ac.sampleRate*d,ac.sampleRate),x=b.getChannelData(0);for(let i=0;i<x.length;i++)x[i]=Math.random()*2-1;const s=ac.createBufferSource();s.buffer=b;const f=ac.createBiquadFilter(),g=ac.createGain();f.type='bandpass';f.Q.value=2;f.frequency.setValueAtTime(f1,s0);f.frequency.linearRampToValueAtTime(f2,s0+d);g.gain.setValueAtTime(.0001,s0);g.gain.linearRampToValueAtTime(v,s0+d*.25);g.gain.linearRampToValueAtTime(.0001,s0+d);s.connect(f);f.connect(g);g.connect(ac.destination);s.start(s0)};
+ for(let i=0;i<9;i++)pass(t+.1+i*.235,.2,i%2?2400:1300,i%2?1300:2400,.35);
+ const h=ac.createOscillator(),hl=ac.createBiquadFilter(),hg=ac.createGain();h.type='triangle';h.frequency.setValueAtTime(90,t);h.frequency.linearRampToValueAtTime(115,t+.5);h.frequency.linearRampToValueAtTime(100,t+D-.2);hl.type='lowpass';hl.frequency.value=350;hg.gain.setValueAtTime(.0001,t);hg.gain.linearRampToValueAtTime(.09,t+.2);hg.gain.setValueAtTime(.09,t+D-.4);hg.gain.linearRampToValueAtTime(.0001,t+D);h.connect(hl);hl.connect(hg);hg.connect(ac.destination);h.start(t);h.stop(t+D);
+ const nz=(s0,d,ty,fq,v,at)=>{const b=ac.createBuffer(1,ac.sampleRate*d,ac.sampleRate),x=b.getChannelData(0);for(let i=0;i<x.length;i++)x[i]=Math.random()*2-1;const s=ac.createBufferSource();s.buffer=b;const f=ac.createBiquadFilter(),g=ac.createGain();f.type=ty;f.frequency.value=fq;g.gain.setValueAtTime(.0001,s0);g.gain.linearRampToValueAtTime(v,s0+at);g.gain.linearRampToValueAtTime(.0001,s0+d);s.connect(f);f.connect(g);g.connect(ac.destination);s.start(s0)};
+ for(let i=0;i<22;i++){const s0=t+.08+i*.105+Math.random()*.012;nz(s0,.05,'lowpass',600,.12,.006);nz(s0,.02,'highpass',3500,.02,.002)}
+ nz(t+.05,2.2,'bandpass',4000,.025,.4);nz(t,.28,'highpass',2500,.14,.05);nz(t+2.05,.32,'highpass',2000,.12,.08);
+ const o=ac.createOscillator(),og=ac.createGain();o.type='sine';o.frequency.value=1319;og.gain.setValueAtTime(.0001,t+2.25);og.gain.exponentialRampToValueAtTime(.09,t+2.26);og.gain.exponentialRampToValueAtTime(.0001,t+2.8);o.connect(og);og.connect(ac.destination);o.start(t+2.25);o.stop(t+2.85)}catch(e){}}
+function printSound(){try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();ac.resume();const t=ac.currentTime,D=2.5;
+ const buf=d=>{const b=ac.createBuffer(1,ac.sampleRate*d,ac.sampleRate),x=b.getChannelData(0);for(let i=0;i<x.length;i++)x[i]=Math.random()*2-1;const s=ac.createBufferSource();s.buffer=b;return s};
+ const env=(g,s0,d,v,at,rl)=>{g.gain.setValueAtTime(.0001,s0);g.gain.linearRampToValueAtTime(v,s0+at);g.gain.setValueAtTime(v,s0+d-rl);g.gain.linearRampToValueAtTime(.0001,s0+d)};
+ const bl=(f,s0,d,v)=>{const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=f;env(g,s0,d,v,.005,d*.6);o.connect(g);g.connect(ac.destination);o.start(s0);o.stop(s0+d)};
+ for(let i=0;i<5;i++){const p=[880,988,1175,1319,1568][i];for(let j=0;j<7;j++)bl(p*(j%2?1.06:1),t+.05+i*.4+j*.042,.035,.1)}
+ const pass=(s0,d,f1,f2,v)=>{const s=buf(d),f=ac.createBiquadFilter(),g=ac.createGain();f.type='bandpass';f.Q.value=2;f.frequency.setValueAtTime(f1,s0);f.frequency.linearRampToValueAtTime(f2,s0+d);env(g,s0,d,v,d*.25,d*.5);s.connect(f);f.connect(g);g.connect(ac.destination);s.start(s0)};
+ for(let i=0;i<4;i++)pass(t+.25+i*.45,.4,i%2?2400:1300,i%2?1300:2400,.12);
+ const h=ac.createOscillator(),hl=ac.createBiquadFilter(),hg=ac.createGain();h.type='triangle';h.frequency.value=130;hl.type='lowpass';hl.frequency.value=400;env(hg,t,D-.3,.05,.2,.3);h.connect(hl);hl.connect(hg);hg.connect(ac.destination);h.start(t);h.stop(t+D);
+ [2093,2637,3136].forEach((p,k)=>bl(p,t+2.05+k*.045,.06,.09));
+ const o=ac.createOscillator(),og=ac.createGain();o.type='sine';o.frequency.value=1319;og.gain.setValueAtTime(.0001,t+2.25);og.gain.exponentialRampToValueAtTime(.09,t+2.26);og.gain.exponentialRampToValueAtTime(.0001,t+2.8);o.connect(og);og.connect(ac.destination);o.start(t+2.25);o.stop(t+2.85)}catch(e){}}
+function grab(i){const c=document.createElement('canvas');c.width=800;c.height=600;const x=c.getContext('2d');
+ if(stream&&vid.videoWidth){x.translate(800,0);x.scale(-1,1);cover(x,vid,0,0,800,600)}
+ else{const g=x.createLinearGradient(0,0,800,600);g.addColorStop(0,`hsl(${i*70+10},80%,65%)`);g.addColorStop(1,`hsl(${i*70+60},70%,45%)`);x.fillStyle=g;x.fillRect(0,0,800,600);x.font='260px serif';x.textAlign='center';x.textBaseline='middle';x.fillText(['😄','😎','🥳','😜'][i],400,310)}
+ return c}
+async function shoot(i){for(let n=3;n>0;n--){cd.textContent=n;cd.classList.remove('pop');void cd.offsetWidth;cd.classList.add('pop');await wait(1000)}cd.textContent='';
+ const f=$('#flash');f.classList.remove('go');void f.offsetWidth;f.classList.add('go');shutter();S.photos[i]=grab(i);S.sid=null;updateThumbs()}
+async function run(fn){if(busy||!(stream||demo))return;busy=true;$('#snap').disabled=true;await fn();busy=false;$('#snap').disabled=false}
+$('#snap').onclick=()=>run(async()=>{S.photos=[null,null,null,null];updateThumbs();for(let i=0;i<4;i++){await shoot(i);await wait(600)}});
+$('#reset').onclick=()=>{if(busy)return;S.photos=[null,null,null,null];updateThumbs()};
+function updateThumbs(){const t=$('#thumbs');t.innerHTML='';S.photos.forEach((p,i)=>{const b=document.createElement('button');b.innerHTML=p?`<img src="${p.toDataURL('image/jpeg',.5)}" alt="Photo ${i+1}">`:i+1;b.onclick=()=>run(()=>shoot(i));t.appendChild(b)});$('#toEdit').disabled=S.photos.some(p=>!p)}
+$('#toEdit').onclick=()=>go('edit');
+
+/* ---------- editor ---------- */
+function group(id,items,get,set,cls){const el=$(id);el.innerHTML='';items.forEach(([k,label,style])=>{const b=document.createElement('button');b.innerHTML=label;if(cls)b.className=cls;if(style)b.style.background=style;b.onclick=()=>{set(k);refresh()};b.dataset.k=k;el.appendChild(b)})}
+function refresh(){[['#oL','layout'],['#oF','filter'],['#oT','theme']].forEach(([id,key])=>$$(id+' button').forEach(b=>b.classList.toggle('on',b.dataset.k===S[key])));$$('#oB .sw').forEach(b=>b.classList.toggle('on',b.dataset.k===(S.bg||'')));redraw()}
+group('#oL',Object.entries(LAY),0,k=>S.layout=k);
+group('#oF',Object.entries(F).map(([k,v])=>[k,v[0]]),0,k=>S.filter=k);
+group('#oT',Object.entries(T).map(([k,v])=>[k,'<i class="dot" style="background:'+v.bg+'"></i>'+v.n]),0,k=>{S.theme=k;S.bg=null});
+$('#oT').insertAdjacentHTML('beforeend','<label class="cust">Custom <input type="color" id="cp" title="Custom background color"></label>');
+$('#cp').oninput=e=>{S.bg=e.target.value;refresh()};
+group('#oS',['❤️','⭐','✨','🎀','😎','🌸','🎄','❄️','🎁','🐱','🦋','🔥','💖','🎈','👑','🌈'].map(e=>[e,e]),0,e=>S.stickers.push({e,x:.2+Math.random()*.6,y:.15+Math.random()*.7,s:44}),'em');
+[['#oS2',['🎄','🎅','🎁','⛄','🔔','🦌','🍪','🌟']],['#oS3',['🎃','👻','🦇','🕸️','💀','🍬','🧙','🕷️']],['#oS4',['🎆','🎉','🥂','🍾','🎇','🎊','🕛','🧨']]].forEach(([id,a])=>group(id,a.map(e=>[e,e]),0,e=>S.stickers.push({e,x:.2+Math.random()*.6,y:.15+Math.random()*.7,s:44}),'em'));
+$('#cap').oninput=e=>{S.caption=e.target.value;redraw()};
+$('#dt').onclick=e=>{S.showDate=!S.showDate;e.target.classList.toggle('on',S.showDate);e.target.textContent='Date & time: '+(S.showDate?'on':'off');redraw()};
+$('#clr').onclick=()=>{S.stickers=[];redraw()};
+let drag=null;const ec=$('#editCv');
+ec.onpointerdown=e=>{const r=ec.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;let best=null,bd=.09;S.stickers.forEach(k=>{const d=Math.hypot((k.x-x)*r.width,(k.y-y)*r.height)/r.width;if(d<bd){bd=d;best=k}});if(best){drag=best;ec.setPointerCapture(e.pointerId)}};
+ec.onpointermove=e=>{if(!drag)return;const r=ec.getBoundingClientRect();drag.x=Math.min(1,Math.max(0,(e.clientX-r.left)/r.width));drag.y=Math.min(1,Math.max(0,(e.clientY-r.top)/r.height));redraw()};
+ec.onpointerup=()=>drag=null;
+refresh();
+Promise.all(['Special Elite','Pacifico','DM Sans','Yeseva One'].map(f=>document.fonts.load(`20px "${f}"`))).then(()=>{if($('#edit').classList.contains('active'))redraw()}).catch(()=>{});
+
+/* ---------- history ---------- */
+function histGet(){try{return JSON.parse(localStorage.getItem('lm-history')||'[]')}catch(e){return[]}}
+function histSet(a){for(;;){try{localStorage.setItem('lm-history',JSON.stringify(a));return}catch(e){if(!a.length)return;a.pop()}}}
+function saveHist(){try{if(!S.sid)S.sid=Date.now();const img=$('#finalCv').toDataURL('image/jpeg',.85);const a=histGet().filter(h=>h.id!==S.sid);a.unshift({id:S.sid,t:Date.now(),img});histSet(a.slice(0,12))}catch(e){}}
+function renderHistory(){const a=histGet(),g=$('#hgrid');g.innerHTML='';$('#hempty').hidden=a.length>0;$('#hclear').hidden=!a.length;
+ a.forEach(h=>{const d=document.createElement('div');d.className='hitem';const when=new Date(h.t).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+ d.innerHTML=`<img src="${h.img}" alt="Saved strip"><div class="hd">${when}</div><div class="ctr" style="margin:6px 0 0"><a class="btn ghost back" download="little-moments-${h.id}.jpg" href="${h.img}">⬇ Download</a><button class="btn ghost back" data-del="${h.id}">Delete</button></div>`;g.appendChild(d)})}
+$('#hgrid').onclick=e=>{const b=e.target.closest('[data-del]');if(b){histSet(histGet().filter(h=>String(h.id)!==b.dataset.del));renderHistory()}};
+let cc=0;$('#hclear').onclick=e=>{const b=e.target;if(!cc){cc=1;b.textContent='Tap again to delete all';setTimeout(()=>{cc=0;b.textContent='Clear all'},3000)}else{cc=0;histSet([]);b.textContent='Clear all';renderHistory()}};
+
+/* ---------- download & share ---------- */
+const blob=()=>new Promise(r=>$('#finalCv').toBlob(r,'image/png'));
+$('#dl').onclick=async()=>{const a=document.createElement('a');a.href=URL.createObjectURL(await blob());a.download='little-moments-'+Date.now()+'.png';a.click();$('#msg').textContent='Saved! Check your downloads folder.'};
+$('#sh').onclick=async()=>{const f=new File([await blob()],'little-moments.png',{type:'image/png'});
+ try{if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f],title:'My Little Moments strip'});else{$('#dl').click();$('#msg').textContent='Sharing isn’t supported here, so your strip was downloaded. Send the image to your friends!'}}catch(e){}};
+/* ---------- rip-out & envelope ---------- */
+let fx=0;
+const mix=(h,w,p)=>{const n=parseInt(h.slice(1),16);return'#'+[n>>16,n>>8&255,n&255].map(v=>Math.round(v+(w-v)*p).toString(16).padStart(2,'0')).join('')};
+function tone(f,s0,d,v,f2){const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.setValueAtTime(f,s0);o.frequency.exponentialRampToValueAtTime(f2||f,s0+d);g.gain.setValueAtTime(.0001,s0);g.gain.exponentialRampToValueAtTime(v,s0+.02);g.gain.exponentialRampToValueAtTime(.0001,s0+d);o.connect(g);g.connect(ac.destination);o.start(s0);o.stop(s0+d+.05)}
+function tearSound(){try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();ac.resume();const t=ac.currentTime,n=Math.floor(ac.sampleRate*.5),b=ac.createBuffer(1,n,ac.sampleRate),x=b.getChannelData(0);let k=1;for(let i=0;i<n;i++){if(i%400===0)k=.3+Math.random()*.7;x[i]=(Math.random()*2-1)*k*Math.min(1,i/2000)*Math.pow(1-i/n,.5)}
+ const s=ac.createBufferSource();s.buffer=b;const f=ac.createBiquadFilter();f.type='bandpass';f.frequency.value=2200;f.Q.value=.8;const g=ac.createGain();g.gain.value=.35;s.connect(f);f.connect(g);g.connect(ac.destination);s.start(t+.4);tone(300,t+.4,.12,.1,150);tone(1568,t+.95,.3,.07)}catch(e){}}
+function envSound(){try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();ac.resume();const t=ac.currentTime;tone(1200,t+.35,.5,.07,500);tone(500,t+1.6,.6,.05,1000);tone(900,t+2.3,.12,.12,1500);tone(1568,t+2.45,.4,.08);tone(1175,t+3.85,.7,.06,2000)}catch(e){}}
+$('#dl').onclick=async()=>{if(fx)return;fx=1;const c=$('#finalCv'),bk=await blob();c.classList.remove('print');void c.offsetWidth;c.classList.add('rip');tearSound();await wait(1000);
+ const a=document.createElement('a');a.href=URL.createObjectURL(bk);a.download='little-moments-'+Date.now()+'.png';a.click();$('#msg').textContent='Saved! Check your downloads folder.';await wait(500);c.classList.remove('rip');c.classList.add('print');fx=0};
+function sendEnv(){fx=1;const e=$('#env'),ev=e.firstElementChild,t=T[S.theme],c=S.bg||t.bg,L=lum(c)>.3;
+ ev.style.setProperty('--c',c);ev.style.setProperty('--d',mix(c,L?0:255,L?.14:.18));ev.style.setProperty('--f',mix(c,L?0:255,L?.07:.1));
+ $('#eimg').src=$('#finalCv').toDataURL('image/jpeg',.7);$('.eseal').textContent=t.dec[0];
+ e.hidden=false;e.classList.remove('go');void e.offsetWidth;e.classList.add('go');envSound();setTimeout(()=>{e.hidden=true;e.classList.remove('go');fx=0},4800)}
+$('#sh').onclick=async()=>{if(fx)return;const bk=await blob(),f=new File([bk],'little-moments.png',{type:'image/png'});let ok=false,m='';
+ try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'My Little Moments strip'});ok=true}}catch(e){if(e&&e.name==='AbortError')return}
+ if(!ok){try{await navigator.clipboard.write([new ClipboardItem({'image/png':bk})]);ok=true;m='Image copied! Paste it into any chat to share it.'}catch(e){}}
+ if(!ok){const a=document.createElement('a');a.href=URL.createObjectURL(bk);a.download='little-moments.png';a.click();$('#msg').textContent='Sharing isn’t supported here, so your strip was downloaded. Send the image to your friends!';return}
+ if(m)$('#msg').textContent=m;sendEnv()};
+/* ---------- share popup ---------- */
+const links=()=>{const u=encodeURIComponent(location.href),m=encodeURIComponent('Check out my photo strip from Little Moments!'),mu=encodeURIComponent('Check out my photo strip from Little Moments! '+location.href);return[
+['Facebook','#1877f2','f','https://www.facebook.com/sharer/sharer.php?u='+u],
+['Messenger','linear-gradient(135deg,#00b2ff,#a334fa,#ff5c87)','💬','fb-messenger://share/?link='+u],
+['WhatsApp','#25d366','✆','https://wa.me/?text='+mu],
+['Telegram','#2aabee','➤','https://t.me/share/url?url='+u+'&text='+m],
+['X','#111','X','https://twitter.com/intent/tweet?text='+m+'&url='+u],
+['Viber','#7360f2','☎','viber://forward?text='+mu],
+['Email','#ec5f9b','✉','mailto:?subject='+encodeURIComponent('My Little Moments strip')+'&body='+mu],
+['Text','#34c759','✎','sms:?&body='+mu]]};
+function openShare(){if(fx)return;$('#shl').value=location.href;$('#plats').innerHTML=links().map(([n,c,g,h])=>`<a class="plat" href="${h}" target="_blank" rel="noopener"><i style="background:${c}">${g}</i>${n}</a>`).join('');$('#shm').hidden=false}
+const closeShare=()=>{$('#shm').hidden=true};
+function shared(){closeShare();setTimeout(sendEnv,350)}
+$('#plats').onclick=e=>{if(e.target.closest('.plat'))shared()};
+$('#shx').onclick=closeShare;
+$('#shm').onclick=e=>{if(e.target.id==='shm')closeShare()};
+$('#shc').onclick=async()=>{const i=$('#shl'),b=$('#shc');try{await navigator.clipboard.writeText(i.value)}catch(e){i.select();try{document.execCommand('copy')}catch(_){}}b.textContent='Copied ✓';setTimeout(()=>{b.textContent='Copy';shared()},700)};
+const imgShare=$('#sh').onclick;
+$('#sh').onclick=openShare;
+$('#shi').onclick=()=>{closeShare();imgShare()};
+</script>
+</body>
+</html>
